@@ -1,6 +1,8 @@
 package Chess;
 
-public class Coordinate {
+import java.util.Objects;
+
+public class Coordinate implements Cloneable {
     public int x;
     public int y;
     public Coordinate(int x, int y) {
@@ -14,6 +16,11 @@ public class Coordinate {
         this.y = coordinate.charAt(1) - '0' - 1;
     }
 
+    public Coordinate(Coordinate coordinate) {
+        this.x = coordinate.x;
+        this.y = coordinate.y;
+    }
+
     public Coordinate add(Coordinate coordinate) {
         return new Coordinate(x + coordinate.x, y + coordinate.y);
     }
@@ -24,5 +31,35 @@ public class Coordinate {
 
     public String toString() {
         return ((char)('a'+x) +""+ (y+1));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        // 1. Same memory reference check
+        if (this == obj) return true;
+
+        // 2. Null check and EXACT class equality check
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        // 3. Safe cast since runtime types match exactly
+        Coordinate other = (Coordinate) obj;
+
+        // 4. Field-by-field comparison
+        return this.x == other.x
+                && this.y == other.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
+
+    @Override
+    public Coordinate clone() {
+        try {
+            return (Coordinate) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

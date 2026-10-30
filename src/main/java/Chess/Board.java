@@ -65,8 +65,24 @@ public class Board {
             System.out.println();
         }
     }
-    public void move(String ches) {
+    public void move(Coordinate from, Coordinate to) {
+        if (this.get(from)==null){
+            throw new IllegalArgumentException();
+        }
+        if (this.get(from).getColor()!=turn){
+            throw new IllegalArgumentException();
+        }
+        board[from.x][from.y].move();
+        board[to.x][to.y] = board[from.x][from.y];
+        board[from.x][from.y] = null;
+        turn = turn.getOpposite();
+    }
 
+    public boolean isCoordinateValid(Coordinate coordinate) {
+        return coordinate.x >= 0 &&
+                coordinate.x < BOARD_SIZE &&
+                coordinate.y >= 0 &&
+                coordinate.y < BOARD_SIZE;
     }
 
     public int getSize(){

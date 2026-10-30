@@ -4,6 +4,7 @@ import Chess.Board;
 import Chess.Color;
 import Chess.Coordinate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class King extends Piece{
@@ -26,7 +27,18 @@ public class King extends Piece{
 
     @Override
     public List<Coordinate> getPossibleMoves(Board board, Coordinate coordinate) {
-        return List.of();
+        List<Coordinate> possibleMoves = new ArrayList<>();
+        for(int x = -1; x <= 1; x++ ){
+            for(int y = -1; y <= 1; y++ ){
+                if(x == 0 && y == 0){ continue; }
+                Coordinate c = coordinate.add(x, y);
+                if (!board.isCoordinateValid(c)){ continue; }
+                if (board.get(c)==null || board.get(c).color != color){
+                    possibleMoves.add(c);
+                }
+            }
+        }
+        return possibleMoves;
     }
 }
 

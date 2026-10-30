@@ -13,4 +13,11 @@ public enum Color {
     public int getDirection() {
         return direction;
     }
+
+    public Color getOpposite() {
+        if (direction == -1) {
+            return White;
+        }
+        return Black;
+    }
 }
