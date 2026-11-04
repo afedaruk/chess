@@ -1,12 +1,15 @@
 package Chess;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.ceil;
+
 import Chess.Pieces.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
 
-	private final int BOARD_SIZE = 8;
+	public final int BOARD_SIZE = 8;
 	private Color turn;
 	private BoardState state = BoardState.PLAYING;
 	Piece[][] board = new Piece[BOARD_SIZE][BOARD_SIZE];
@@ -90,16 +93,40 @@ public class Board {
 		}
 	}
 
-	public void move(Coordinate from, Coordinate to) {
+	public void moveNoTurn(Coordinate from, Coordinate to) {
 		if (this.get(from) == null) {
 			throw new IllegalArgumentException();
 		}
 		if (this.get(from).getColor() != turn) {
 			throw new IllegalArgumentException();
 		}
+		// Castling
+		Piece piece = this.get(from);
+		Piece toPiece = this.get(to);
+		if (
+			toPiece != null &&
+			piece.getColor() == toPiece.getColor() &&
+			piece instanceof King &&
+			toPiece instanceof Rook
+		) {
+			Coordinate newKingsPosition = new Coordinate((int) ceil((from.x + to.x) / 2.0), from.y);
+			int rookShift = ((from.x + to.x) % 2 == 0) ? 1 : -1;
+			Coordinate newRooksPosition = new Coordinate(newKingsPosition.x + rookShift, from.y);
+			board[from.x][from.y].move();
+			board[to.x][to.y].move();
+			board[newKingsPosition.x][newKingsPosition.y] = piece;
+			board[newRooksPosition.x][newRooksPosition.y] = toPiece;
+			board[from.x][from.y] = null;
+			board[to.x][to.y] = null;
+			return;
+		}
 		board[from.x][from.y].move();
 		board[to.x][to.y] = board[from.x][from.y];
 		board[from.x][from.y] = null;
+	}
+
+	public void move(Coordinate from, Coordinate to) {
+		moveNoTurn(from, to);
 		turn = turn.getOpposite();
 	}
 
@@ -189,18 +216,50 @@ public class Board {
 	}
 
 	public List<Coordinate> getPieceMoves(Coordinate c) {
-		if (turn != get(c).getColor()) {
+		Piece piece = get(c);
+		if (turn != piece.getColor()) {
 			return List.of();
 		}
-		var possibleMoves = get(c).getPossibleMoves(this, c);
+		var possibleMoves = piece.getPossibleMoves(this, c);
 		var validMoves = new ArrayList<Coordinate>();
 		for (var move : possibleMoves) {
-			System.out.println("Checking move " + move);
-			Board board = new Board(this.board, this.turn);
-			board.move(c, move);
-			board.print();
-			if (!board.isUnderCheck(turn)) {
-				validMoves.add(move);
+			Piece toPiece = get(move);
+			if (
+				toPiece != null &&
+				piece.getColor() == toPiece.getColor() &&
+				piece instanceof King &&
+				toPiece instanceof Rook
+			) {
+				// Castling
+				Coordinate newKingsPosition = new Coordinate((int) ceil((c.x + move.x) / 2.0), c.y);
+				int castlingDirection = (move.x - c.x) / abs(move.x - c.x);
+				Coordinate currKingCoordinate = c.clone();
+				boolean isValidCastling = true;
+				Board board = new Board(this.board, this.turn);
+				while (!currKingCoordinate.equals(newKingsPosition)) {
+					System.out.println("Curr King: " + currKingCoordinate);
+					Coordinate kingCoordinateAfterStep = currKingCoordinate.add(new Coordinate(castlingDirection, 0));
+					if (board.get(kingCoordinateAfterStep) != null) {
+						isValidCastling = false;
+						break;
+					}
+					board.moveNoTurn(currKingCoordinate, kingCoordinateAfterStep);
+					currKingCoordinate = kingCoordinateAfterStep;
+					if (board.isUnderCheck(turn)) {
+						isValidCastling = false;
+						break;
+					}
+				}
+				if (isValidCastling) {
+					validMoves.add(move);
+				}
+			} else {
+				System.out.println("Checking move " + move);
+				Board board = new Board(this.board, this.turn);
+				board.move(c, move);
+				if (!board.isUnderCheck(turn)) {
+					validMoves.add(move);
+				}
 			}
 		}
 		return validMoves;

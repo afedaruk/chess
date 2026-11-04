@@ -1,5 +1,8 @@
 package Chess.Pieces;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.ceil;
+
 import Chess.Board;
 import Chess.Color;
 import Chess.Coordinate;
@@ -40,6 +43,19 @@ public class King extends Piece {
 					possibleMoves.add(c);
 				}
 			}
+		}
+		// Castling
+		List<Coordinate> rooks = new ArrayList<>();
+		for (int x = 0; x <= board.BOARD_SIZE; x++) {
+			for (int y = 0; y <= board.BOARD_SIZE; y++) {
+				Piece piece = board.get(x, y);
+				if (piece != null && piece.color == color && piece instanceof Rook && !piece.hasMoved) {
+					rooks.add(new Coordinate(x, y));
+				}
+			}
+		}
+		if (!hasMoved) {
+			possibleMoves.addAll(rooks);
 		}
 		return possibleMoves;
 	}

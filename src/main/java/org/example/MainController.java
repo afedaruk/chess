@@ -96,9 +96,10 @@ public class MainController {
 	}
 
 	private void updateBoard() {
+		clearMoveMarks();
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
-				squares[i][j].getChildren().removeIf(child -> !(child instanceof Rectangle));
+				squares[i][j].getChildren().removeIf(child -> (child.getStyleClass().contains("Piece")));
 				doesSquareHaveMoveMark[i][j] = false;
 				setSquarePiece(i, j, board.get(i, j));
 			}
@@ -133,6 +134,7 @@ public class MainController {
 		Label l = new Label(piece.toSymbol());
 		l.setStyle("-fx-font-size: 60;");
 		l.setTextFill(Color.WHITE);
+		l.getStyleClass().add("Piece");
 		squares[x][y].getChildren().add(l);
 	}
 
