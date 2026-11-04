@@ -14,6 +14,11 @@ public class Bishop extends Piece {
 	}
 
 	@Override
+	public Bishop copy() {
+		return new Bishop(color);
+	}
+
+	@Override
 	public char toChar() {
 		if (color == Color.White) return '♗'; else {
 			return '♝';

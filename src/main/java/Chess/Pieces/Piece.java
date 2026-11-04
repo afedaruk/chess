@@ -13,6 +13,10 @@ public abstract class Piece {
 
 	public abstract char toChar();
 
+	public String toSymbol() {
+		return toChar() + "";
+	}
+
 	public abstract int value();
 
 	public Piece(Color color) {
@@ -29,4 +33,6 @@ public abstract class Piece {
 	public void move() {
 		hasMoved = true;
 	}
+
+	public abstract Piece copy();
 }

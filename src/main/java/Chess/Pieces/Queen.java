@@ -13,6 +13,11 @@ public class Queen extends Piece {
 	}
 
 	@Override
+	public Queen copy() {
+		return new Queen(color);
+	}
+
+	@Override
 	public char toChar() {
 		if (color == Color.White) return '♕'; else {
 			return '♛';
@@ -72,7 +77,7 @@ public class Queen extends Piece {
 			break;
 		}
 		for (
-			Coordinate c = new Coordinate(coordinate.x + 2, coordinate.y + 2);
+			Coordinate c = new Coordinate(coordinate.x + 1, coordinate.y + 1);
 			c.x < board.getSize() && c.y < board.getSize();
 			c.x++, c.y++
 		) {
@@ -87,7 +92,7 @@ public class Queen extends Piece {
 			break;
 		}
 		for (
-			Coordinate c = new Coordinate(coordinate.x + 2, coordinate.y - 2);
+			Coordinate c = new Coordinate(coordinate.x + 1, coordinate.y - 1);
 			c.x < board.getSize() && c.y >= 0;
 			c.x++, c.y--
 		) {
@@ -102,7 +107,7 @@ public class Queen extends Piece {
 			break;
 		}
 		for (
-			Coordinate c = new Coordinate(coordinate.x - 2, coordinate.y + 2);
+			Coordinate c = new Coordinate(coordinate.x - 1, coordinate.y + 1);
 			c.x >= 0 && c.y < board.getSize();
 			c.x--, c.y++
 		) {
@@ -116,7 +121,7 @@ public class Queen extends Piece {
 			}
 			break;
 		}
-		for (Coordinate c = new Coordinate(coordinate.x - 2, coordinate.y - 2); c.x >= 0 && c.y >= 0; c.x--, c.y--) {
+		for (Coordinate c = new Coordinate(coordinate.x - 1, coordinate.y - 1); c.x >= 0 && c.y >= 0; c.x--, c.y--) {
 			if (board.get(c) == null) {
 				possibleMoves.add(c.clone());
 				continue;
