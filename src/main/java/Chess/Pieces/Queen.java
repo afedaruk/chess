@@ -6,7 +6,7 @@ import Chess.Coordinate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Queen extends Piece {
+public class Queen extends Piece implements BishopPrototype, RookPrototype {
 
 	public Queen(Color color) {
 		super(color);
@@ -31,107 +31,9 @@ public class Queen extends Piece {
 
 	@Override
 	public List<Coordinate> getPossibleMoves(Board board, Coordinate coordinate) {
-		List<Coordinate> possibleMoves = new ArrayList<>();
-		for (Coordinate c = new Coordinate(coordinate.x + 1, coordinate.y); c.x < board.getSize(); c.x++) {
-			if (board.get(c) == null) {
-				possibleMoves.add(c.clone());
-				continue;
-			}
-			if (board.get(c).getColor() != color) {
-				possibleMoves.add(c.clone());
-				break;
-			}
-			break;
-		}
-		for (Coordinate c = new Coordinate(coordinate.x - 1, coordinate.y); c.x >= 0; c.x--) {
-			if (board.get(c) == null) {
-				possibleMoves.add(c.clone());
-				continue;
-			}
-			if (board.get(c).getColor() != color) {
-				possibleMoves.add(c.clone());
-				break;
-			}
-			break;
-		}
-		for (Coordinate c = new Coordinate(coordinate.x, coordinate.y + 1); c.y < board.getSize(); c.y++) {
-			if (board.get(c) == null) {
-				possibleMoves.add(c.clone());
-				continue;
-			}
-			if (board.get(c).getColor() != color) {
-				possibleMoves.add(c.clone());
-				break;
-			}
-			break;
-		}
-		for (Coordinate c = new Coordinate(coordinate.x, coordinate.y - 1); c.y >= 0; c.y--) {
-			if (board.get(c) == null) {
-				possibleMoves.add(c.clone());
-				continue;
-			}
-			if (board.get(c).getColor() != color) {
-				possibleMoves.add(c.clone());
-				break;
-			}
-			break;
-		}
-		for (
-			Coordinate c = new Coordinate(coordinate.x + 1, coordinate.y + 1);
-			c.x < board.getSize() && c.y < board.getSize();
-			c.x++, c.y++
-		) {
-			if (board.get(c) == null) {
-				possibleMoves.add(c.clone());
-				continue;
-			}
-			if (board.get(c).getColor() != color) {
-				possibleMoves.add(c.clone());
-				break;
-			}
-			break;
-		}
-		for (
-			Coordinate c = new Coordinate(coordinate.x + 1, coordinate.y - 1);
-			c.x < board.getSize() && c.y >= 0;
-			c.x++, c.y--
-		) {
-			if (board.get(c) == null) {
-				possibleMoves.add(c.clone());
-				continue;
-			}
-			if (board.get(c).getColor() != color) {
-				possibleMoves.add(c.clone());
-				break;
-			}
-			break;
-		}
-		for (
-			Coordinate c = new Coordinate(coordinate.x - 1, coordinate.y + 1);
-			c.x >= 0 && c.y < board.getSize();
-			c.x--, c.y++
-		) {
-			if (board.get(c) == null) {
-				possibleMoves.add(c.clone());
-				continue;
-			}
-			if (board.get(c).getColor() != color) {
-				possibleMoves.add(c.clone());
-				break;
-			}
-			break;
-		}
-		for (Coordinate c = new Coordinate(coordinate.x - 1, coordinate.y - 1); c.x >= 0 && c.y >= 0; c.x--, c.y--) {
-			if (board.get(c) == null) {
-				possibleMoves.add(c.clone());
-				continue;
-			}
-			if (board.get(c).getColor() != color) {
-				possibleMoves.add(c.clone());
-				break;
-			}
-			break;
-		}
-		return possibleMoves;
+		List<Coordinate> moves = new ArrayList<>();
+		moves.addAll(getBishopMoves(board, coordinate, this.color));
+		moves.addAll(getRookMoves(board, coordinate, this.color));
+		return moves;
 	}
 }

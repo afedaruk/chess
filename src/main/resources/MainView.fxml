@@ -5,13 +5,20 @@
 
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.layout.HBox ?>
+<?import javafx.geometry.Insets?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.MainController"
       prefWidth="800"
       prefHeight="1000">
     <GridPane fx:id="boardGrid" gridLinesVisible="true"/>
-
-    <Button text="Submit" onAction="#handleButtonClick"/>
-    <Label fx:id="myLabel" text="Welcome!"/>
+    <HBox fx:id="promotionChoiceContainer">
+        <padding>
+            <Insets left="200" right="200"/>
+        </padding>
+    </HBox>
+    <CheckBox fx:id="checkBox" text="Flip the board" onAction="#handleButtonClick"/>
+    <Button fx:id="restartButton" text="Restart" onAction="#initialize"/>
 </VBox>

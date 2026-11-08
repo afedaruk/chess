@@ -279,4 +279,8 @@ public class Board {
 		}
 		return null;
 	}
+
+	public void replacePiece(int x, int y, Piece chosenPiece) {
+		board[x][y] = chosenPiece;
+	}
 }
