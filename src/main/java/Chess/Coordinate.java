@@ -21,6 +21,9 @@ public class Coordinate implements Cloneable {
 	}
 
 	public Coordinate(Coordinate coordinate) {
+		if (coordinate == null) {
+			return;
+		}
 		this.x = coordinate.x;
 		this.y = coordinate.y;
 	}

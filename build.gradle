@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'org.beryx.jlink' version '4.2.0'
 }
 
 repositories {
@@ -10,9 +11,17 @@ repositories {
 
 javafx {
     version = "21.0.2"
-    modules = ['javafx.controls', 'javafx.fxml']
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.media']
 }
 
 application {
     mainClass = 'org.openjfx.MainApp'
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'Chess'
+    }
+    mergedModuleName = 'com.chess.merged'
 }

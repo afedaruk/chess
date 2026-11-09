@@ -4,10 +4,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.ceil;
 
 import Chess.Pieces.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Board {
 
@@ -16,6 +13,8 @@ public class Board {
 	private final List<Color> PLAYER_COLORS = List.of(Color.White, Color.Black);
 
 	private Color turn;
+	private Coordinate lastMovedPieceFrom;
+	private Coordinate lastMovedPieceTo;
 	private int movesWithoutPawnMove;
 	public final HistoryBuilder historyBuilder;
 	private Map<Color, Integer> material;
@@ -69,6 +68,8 @@ public class Board {
 		this.historyBuilder = board.historyBuilder.copy();
 		this.material = new HashMap<Color, Integer>(board.material);
 		this.movesWithoutPawnMove = 0;
+		this.lastMovedPieceTo = new Coordinate(board.lastMovedPieceTo);
+		this.lastMovedPieceFrom = new Coordinate(board.lastMovedPieceFrom);
 	}
 
 	public Piece get(Coordinate coordinate) {
@@ -125,6 +126,8 @@ public class Board {
 			piece instanceof King &&
 			toPiece instanceof Rook
 		) {
+			lastMovedPieceFrom = new Coordinate(from);
+			lastMovedPieceTo = new Coordinate(to);
 			Coordinate newKingsPosition = new Coordinate((int) ceil((from.x + to.x) / 2.0), from.y);
 			int rookShift = ((from.x + to.x) % 2 == 0) ? 1 : -1;
 			Coordinate newRooksPosition = new Coordinate(newKingsPosition.x + rookShift, from.y);
@@ -137,6 +140,18 @@ public class Board {
 			historyBuilder.addCastling();
 			return;
 		}
+		if (
+			piece instanceof Pawn && toPiece instanceof Pawn && piece.getColor() != toPiece.getColor() && from.y == to.y
+		) {
+			// En passant
+			board[from.x][from.y].move();
+			board[to.x][to.y + piece.getColor().getDirection()] = board[from.x][from.y];
+			board[from.x][from.y] = null;
+			board[to.x][to.y] = null;
+			return;
+		}
+		lastMovedPieceFrom = new Coordinate(from);
+		lastMovedPieceTo = new Coordinate(to);
 		board[from.x][from.y].move();
 		board[to.x][to.y] = board[from.x][from.y];
 		board[from.x][from.y] = null;
@@ -267,13 +282,14 @@ public class Board {
 				// Castling
 				Coordinate newKingsPosition = new Coordinate((int) ceil((c.x + move.x) / 2.0), c.y);
 				int castlingDirection = (move.x - c.x) / abs(move.x - c.x);
-				Coordinate currKingCoordinate = c.clone();
 				boolean isValidCastling = true;
 				Board board = new Board(this);
 				if (board.isUnderCheck(turn)) {
 					isValidCastling = false;
 					break;
 				}
+				// Iterate over all squares and verify valid castling
+				Coordinate currKingCoordinate = c.clone();
 				while (!currKingCoordinate.equals(newKingsPosition)) {
 					Coordinate kingCoordinateAfterStep = currKingCoordinate.add(new Coordinate(castlingDirection, 0));
 					if (board.get(kingCoordinateAfterStep) != null) {
@@ -290,7 +306,19 @@ public class Board {
 				if (isValidCastling) {
 					validMoves.add(move);
 				}
-			} else {
+				continue;
+			}
+			if (piece instanceof Pawn && toPiece instanceof Pawn) {
+				// En passant
+				Board board = new Board(this);
+				Coordinate newPawnCoordinate = move.add(new Coordinate(0, piece.getColor().getDirection()));
+				board.move(c, newPawnCoordinate);
+				if (!board.isUnderCheck(turn)) {
+					validMoves.add(move);
+				}
+				continue;
+			}
+			{
 				System.out.println("Checking move " + move);
 				Board board = new Board(this);
 				board.move(c, move);
@@ -336,5 +364,13 @@ public class Board {
 
 	public void resign() {
 		this.state = BoardState.CHECKMATE;
+	}
+
+	public Coordinate getLastMovedPieceFrom() {
+		return lastMovedPieceFrom;
+	}
+
+	public Coordinate getLastMovedPieceTo() {
+		return lastMovedPieceTo;
 	}
 }

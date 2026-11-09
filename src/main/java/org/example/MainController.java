@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -31,6 +32,9 @@ public class MainController {
 	public Label gameLog;
 
 	@FXML
+	public Button downloadHistoryButton;
+
+	@FXML
 	private CheckBox checkBox;
 
 	boolean shouldFlipBoard = false;
@@ -38,6 +42,8 @@ public class MainController {
 
 	private final Color EVEN_SQUARE_COLOR = Color.LIGHTGRAY;
 	private final Color ODD_SQUARE_COLOR = Color.DARKBLUE;
+
+	private final SoundController soundController = new SoundController();
 
 	public void handleButtonClick(ActionEvent event) {
 		shouldFlipBoard = checkBox.isSelected();
@@ -52,6 +58,7 @@ public class MainController {
 
 	@FXML
 	private void initialize() {
+		soundController.initialize();
 		startNewGame();
 	}
 
@@ -81,6 +88,7 @@ public class MainController {
 					);
 			} else {
 				moveSelectedPieceTo(x, y);
+				soundController.playMoveSound();
 			}
 			return;
 		}
@@ -145,11 +153,11 @@ public class MainController {
 	private void moveSelectedPieceTo(int x, int y) {
 		board.moveAndUpdateState(selectedPieceCoordinate, new Coordinate(x, y));
 		updateBoard();
-		runPostMoveChecks(board);
+		runPostMoveChecks();
 		return;
 	}
 
-	private void runPostMoveChecks(Board board) {
+	private void runPostMoveChecks() {
 		BoardState boardState = board.getState();
 		Chess.Color colorToMove = board.getTurn();
 		Coordinate kingCoordinate = board.getKingCoordinate(board.getTurn());
@@ -172,7 +180,9 @@ public class MainController {
 	}
 
 	private void createCheckEffect(int x, int y) {
-		System.out.println("Creating check effect");
+		if (isBoardFlipped) {
+			y = BOARD_SIZE - 1 - y;
+		}
 		Label kingSymbol = (Label) squares[x][y].getChildren()
 			.stream()
 			.filter(child -> {
@@ -184,7 +194,9 @@ public class MainController {
 	}
 
 	private void createCheckmateEffect(int x, int y) {
-		System.out.println("Creating check effect");
+		if (isBoardFlipped) {
+			y = BOARD_SIZE - 1 - y;
+		}
 		Label kingSymbol = (Label) squares[x][y].getChildren()
 			.stream()
 			.filter(child -> {
@@ -311,11 +323,13 @@ public class MainController {
 	@FXML
 	private void downloadHistory() {
 		board.historyBuilder.downloadHistory();
+		downloadHistoryButton.setText("PGN saved to Downloads✔");
 	}
 
 	public void resign() {
 		board.resign();
 		updateBoard();
+		runPostMoveChecks();
 	}
 
 	private void updateGameStateVisuals() {
@@ -327,6 +341,7 @@ public class MainController {
 			gameOverText.setText("Draw");
 			overlayCard.setVisible(true);
 		}
+		downloadHistoryButton.setText("Download history (PGN)");
 	}
 
 	@FXML

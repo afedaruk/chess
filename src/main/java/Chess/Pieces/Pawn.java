@@ -9,6 +9,8 @@ import javafx.util.Pair;
 
 public class Pawn extends Piece {
 
+	public boolean hasJustMoved = false;
+
 	public Pawn(Color color) {
 		super(color);
 	}
@@ -37,11 +39,14 @@ public class Pawn extends Piece {
 
 	@Override
 	public List<Coordinate> getPossibleMoves(Board board, Coordinate coordinate) {
+		System.out.println(coordinate.toString());
 		List<Coordinate> possibleMoves = new ArrayList<>();
 		Coordinate forward = coordinate.add(0, color.getDirection());
 		Coordinate two_forward = coordinate.add(0, 2 * color.getDirection());
 		Coordinate forward_left = coordinate.add(1, color.getDirection());
 		Coordinate forward_right = coordinate.add(-1, color.getDirection());
+		Coordinate left = coordinate.add(1, 0);
+		Coordinate right = coordinate.add(-1, 0);
 		if (board.get(forward) == null) {
 			possibleMoves.add(forward);
 		}
@@ -53,6 +58,29 @@ public class Pawn extends Piece {
 		}
 		if (board.get(forward_right) != null && board.get(forward_right).color != color) {
 			possibleMoves.add(forward_right);
+		}
+		// En passant
+		Piece pieceOnLeft = board.get(left);
+		if (pieceOnLeft != null && pieceOnLeft.color != color && pieceOnLeft instanceof Pawn) {
+			Coordinate doublePawnJump = new Coordinate(0, 2);
+			boolean movedWithDoubleJump =
+				board.getLastMovedPieceFrom().equals(left.add(doublePawnJump)) ||
+				board.getLastMovedPieceFrom().equals(left.substract(doublePawnJump));
+			boolean movedInTheLastMove = board.getLastMovedPieceTo().equals(left);
+			if (movedWithDoubleJump && movedInTheLastMove) {
+				possibleMoves.add(left);
+			}
+		}
+		Piece pieceOnRight = board.get(right);
+		if (pieceOnRight != null && pieceOnRight.color != color && pieceOnRight instanceof Pawn) {
+			Coordinate doublePawnJump = new Coordinate(0, 2);
+			boolean movedWithDoubleJump =
+				board.getLastMovedPieceFrom().equals(right.add(doublePawnJump)) ||
+				board.getLastMovedPieceFrom().equals(right.substract(doublePawnJump));
+			boolean movedInTheLastMove = board.getLastMovedPieceTo().equals(right);
+			if (movedWithDoubleJump && movedInTheLastMove) {
+				possibleMoves.add(right);
+			}
 		}
 		return possibleMoves;
 	}

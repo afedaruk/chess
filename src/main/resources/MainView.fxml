@@ -14,7 +14,7 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.MainController"
       prefWidth="800"
-      prefHeight="800">
+      prefHeight="750">
     <VBox spacing="2">
         <GridPane fx:id="boardGrid" gridLinesVisible="true"/>
         <HBox fx:id="promotionChoiceContainer">
@@ -29,17 +29,17 @@
         </HBox>
         <Label fx:id="gameLog"/>
 
-        <StackPane prefWidth="400.0" prefHeight="300.0">
+        <StackPane prefWidth="600.0" prefHeight="300.0">
             <VBox fx:id="overlayCard"
                   visible="false"
-                  maxHeight="200.0" maxWidth="220.0"
+                  maxWidth="250.0"
                   alignment="CENTER" spacing="10"
                   translateY="-500"
-                  style="-fx-background-color: lightyellow; -fx-border-color: black;">
-                <Label fx:id="gameOverText" text="I am floating on top!"/>
+                  style="-fx-background-color: lightyellow; -fx-border-color: black; -fx-padding: 40">
+                <Label fx:id="gameOverText" text="I am floating on top!" style="-fx-font-size: 30px;"/>
                 <Button text="Close" onAction="#hideOverlay"/>
                 <Button text="Restart" onAction="#initialize"/>
-                <Button fx:id="printHistory" text="Download history" onAction="#downloadHistory"/>
+                <Button fx:id="downloadHistoryButton" text="Download history (PGN)" onAction="#downloadHistory"/>
             </VBox>
         </StackPane>
 
