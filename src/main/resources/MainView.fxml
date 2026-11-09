@@ -7,18 +7,41 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.layout.HBox ?>
+<?import javafx.scene.layout.VBox ?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.StackPane?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.MainController"
       prefWidth="800"
-      prefHeight="1000">
-    <GridPane fx:id="boardGrid" gridLinesVisible="true"/>
-    <HBox fx:id="promotionChoiceContainer">
-        <padding>
-            <Insets left="200" right="200"/>
-        </padding>
-    </HBox>
-    <CheckBox fx:id="checkBox" text="Flip the board" onAction="#handleButtonClick"/>
-    <Button fx:id="restartButton" text="Restart" onAction="#initialize"/>
+      prefHeight="800">
+    <VBox spacing="2">
+        <GridPane fx:id="boardGrid" gridLinesVisible="true"/>
+        <HBox fx:id="promotionChoiceContainer">
+            <padding>
+                <Insets left="200" right="200"/>
+            </padding>
+        </HBox>
+        <HBox spacing="10" alignment="CENTER">
+            <CheckBox fx:id="checkBox" text="Flip the board" onAction="#handleButtonClick"/>
+            <Button fx:id="restartButton" text="Restart" onAction="#startNewGame"/>
+            <Button text="Resign" onAction="#resign"/>
+        </HBox>
+        <Label fx:id="gameLog"/>
+
+        <StackPane prefWidth="400.0" prefHeight="300.0">
+            <VBox fx:id="overlayCard"
+                  visible="false"
+                  maxHeight="200.0" maxWidth="220.0"
+                  alignment="CENTER" spacing="10"
+                  translateY="-500"
+                  style="-fx-background-color: lightyellow; -fx-border-color: black;">
+                <Label fx:id="gameOverText" text="I am floating on top!"/>
+                <Button text="Close" onAction="#hideOverlay"/>
+                <Button text="Restart" onAction="#initialize"/>
+                <Button fx:id="printHistory" text="Download history" onAction="#downloadHistory"/>
+            </VBox>
+        </StackPane>
+
+    </VBox>
 </VBox>

@@ -23,8 +23,13 @@ public class King extends Piece {
 	}
 
 	@Override
+	public String toLetter() {
+		return "K";
+	}
+
+	@Override
 	public int value() {
-		return 9999;
+		return 0;
 	}
 
 	@Override

@@ -26,6 +26,11 @@ public class Bishop extends Piece implements BishopPrototype {
 	}
 
 	@Override
+	public String toLetter() {
+		return "B";
+	}
+
+	@Override
 	public int value() {
 		return 3;
 	}

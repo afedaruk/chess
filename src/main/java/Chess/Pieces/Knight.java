@@ -20,6 +20,11 @@ public class Knight extends Piece {
 	}
 
 	@Override
+	public String toLetter() {
+		return "N";
+	}
+
+	@Override
 	public int value() {
 		return 3;
 	}

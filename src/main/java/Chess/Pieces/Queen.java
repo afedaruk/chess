@@ -25,6 +25,11 @@ public class Queen extends Piece implements BishopPrototype, RookPrototype {
 	}
 
 	@Override
+	public String toLetter() {
+		return "Q";
+	}
+
+	@Override
 	public int value() {
 		return 9;
 	}

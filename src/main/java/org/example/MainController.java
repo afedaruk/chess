@@ -14,9 +14,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import org.w3c.dom.Text;
 
 public class MainController {
 
@@ -25,6 +25,10 @@ public class MainController {
 
 	@FXML
 	public HBox promotionChoiceContainer;
+
+	public VBox overlayCard;
+	public Label gameOverText;
+	public Label gameLog;
 
 	@FXML
 	private CheckBox checkBox;
@@ -48,8 +52,14 @@ public class MainController {
 
 	@FXML
 	private void initialize() {
+		startNewGame();
+	}
+
+	public void startNewGame() {
 		board = new Board();
+		board.print();
 		updateBoard();
+		hideOverlay();
 	}
 
 	private void handleSquareClicked(int x, int y) {
@@ -150,7 +160,7 @@ public class MainController {
 				System.out.println("CHECKMATED. " + board.getWinner() + " WON");
 				createCheckmateEffect(kingX, kingY);
 				break;
-			case STALEMATE:
+			case DRAW:
 				System.out.println("STALEMATE.");
 				break;
 			case PLAYING:
@@ -200,6 +210,8 @@ public class MainController {
 		isBoardFlipped = board.getTurn() == Chess.Color.Black && shouldFlipBoard;
 		updateBaseBoard();
 		updatePieces();
+		updateGameStateVisuals();
+		updateLog();
 	}
 
 	private void updateBaseBoard() {
@@ -285,5 +297,40 @@ public class MainController {
 		Label l = new Label(label);
 		l.setTextFill(Color.GRAY);
 		squares[x][y].getChildren().add(l);
+	}
+
+	private void updateLog() {
+		gameLog.setText(board.historyBuilder.getRawHistory());
+	}
+
+	@FXML
+	private void printHistory() {
+		System.out.println(board.historyBuilder.getHistory());
+	}
+
+	@FXML
+	private void downloadHistory() {
+		board.historyBuilder.downloadHistory();
+	}
+
+	public void resign() {
+		board.resign();
+		updateBoard();
+	}
+
+	private void updateGameStateVisuals() {
+		if (board.getState() == BoardState.CHECKMATE) {
+			gameOverText.setText(board.getTurn().getOpposite().toString() + " won!");
+			overlayCard.setVisible(true);
+		}
+		if (board.getState() == BoardState.DRAW) {
+			gameOverText.setText("Draw");
+			overlayCard.setVisible(true);
+		}
+	}
+
+	@FXML
+	private void hideOverlay() {
+		overlayCard.setVisible(false);
 	}
 }

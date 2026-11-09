@@ -5,17 +5,30 @@ import static java.lang.Math.ceil;
 
 import Chess.Pieces.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Board {
 
 	public final int BOARD_SIZE = 8;
+	private final int MAX_MOVES_WITHOUT_PAWN_MOVE = 100; // 50 full moves
+	private final List<Color> PLAYER_COLORS = List.of(Color.White, Color.Black);
+
 	private Color turn;
+	private int movesWithoutPawnMove;
+	public final HistoryBuilder historyBuilder;
+	private Map<Color, Integer> material;
 	private BoardState state = BoardState.PLAYING;
-	Piece[][] board = new Piece[BOARD_SIZE][BOARD_SIZE];
+	public Piece[][] board = new Piece[BOARD_SIZE][BOARD_SIZE];
 
 	public Board() {
+		movesWithoutPawnMove = 0;
 		turn = Color.White;
+		historyBuilder = new HistoryBuilder();
+		material = new HashMap<Color, Integer>();
+		material.put(Color.White, 39);
+		material.put(Color.Black, 39);
 		board[0][0] = new Rook(Color.White);
 		board[1][0] = new Knight(Color.White);
 		board[2][0] = new Bishop(Color.White);
@@ -40,18 +53,22 @@ public class Board {
 		}
 	}
 
-	public Board(Piece[][] board, Color turn) {
+	public Board(Board board) {
 		this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
-				Piece piece = board[i][j];
+				Piece piece = board.board[i][j];
 				if (piece == null) {
 					continue;
 				}
 				this.board[i][j] = piece.copy();
 			}
 		}
-		this.turn = turn;
+		this.turn = board.turn;
+		this.state = board.state;
+		this.historyBuilder = board.historyBuilder.copy();
+		this.material = new HashMap<Color, Integer>(board.material);
+		this.movesWithoutPawnMove = 0;
 	}
 
 	public Piece get(Coordinate coordinate) {
@@ -84,7 +101,6 @@ public class Board {
 			for (int j = 0; j < 8; j++) {
 				if (board[j][i] != null) {
 					System.out.print(board[j][i].toChar());
-					//System.out.print(" ");
 				} else {
 					System.out.print("  ");
 				}
@@ -118,11 +134,13 @@ public class Board {
 			board[newRooksPosition.x][newRooksPosition.y] = toPiece;
 			board[from.x][from.y] = null;
 			board[to.x][to.y] = null;
+			historyBuilder.addCastling();
 			return;
 		}
 		board[from.x][from.y].move();
 		board[to.x][to.y] = board[from.x][from.y];
 		board[from.x][from.y] = null;
+		historyBuilder.add(piece.toLetter() + to.toString(), isUnderCheck(turn.getOpposite()));
 	}
 
 	public void move(Coordinate from, Coordinate to) {
@@ -131,9 +149,13 @@ public class Board {
 	}
 
 	public void moveAndUpdateState(Coordinate from, Coordinate to) {
+		if (!(board[from.x][from.y] instanceof Pawn)) {
+			movesWithoutPawnMove++;
+		}
 		move(from, to);
 		updateIsCheckmated(turn);
 		updateIsStalemated(turn);
+		updateDraw();
 	}
 
 	public boolean isCoordinateValid(Coordinate coordinate) {
@@ -163,8 +185,11 @@ public class Board {
 				if (piece == null) {
 					continue;
 				}
+				if (piece.getColor() == colorUnderCheck) {
+					continue;
+				}
 				List<Coordinate> pieceMoves = piece.getPossibleMoves(this, new Coordinate(i, j));
-				if (piece.getColor() != colorUnderCheck && pieceMoves.contains(kingCoordinate)) hasCheck = true;
+				if (pieceMoves.contains(kingCoordinate)) hasCheck = true;
 			}
 		}
 		return hasCheck;
@@ -182,7 +207,16 @@ public class Board {
 		if (isUnderCheck(colorStalemated)) return;
 		boolean isStalemated = hasNoMoves(colorStalemated);
 		if (isStalemated) {
-			state = BoardState.STALEMATE;
+			state = BoardState.DRAW;
+		}
+	}
+
+	private void updateDraw() {
+		if (movesWithoutPawnMove >= MAX_MOVES_WITHOUT_PAWN_MOVE) {
+			state = BoardState.DRAW;
+		}
+		if (material.get(Color.White) <= 3) {
+			state = BoardState.DRAW;
 		}
 	}
 
@@ -199,7 +233,7 @@ public class Board {
 				}
 				List<Coordinate> pieceMoves = piece.getPossibleMoves(this, new Coordinate(i, j));
 				for (Coordinate pieceMove : pieceMoves) {
-					Board possibleBoard = new Board(board, piece.getColor());
+					Board possibleBoard = new Board(this);
 					possibleBoard.move(new Coordinate(i, j), pieceMove);
 					if (!possibleBoard.isUnderCheck(color)) {
 						noMoves = false;
@@ -217,7 +251,7 @@ public class Board {
 
 	public List<Coordinate> getPieceMoves(Coordinate c) {
 		Piece piece = get(c);
-		if (turn != piece.getColor()) {
+		if (state != BoardState.PLAYING || turn != piece.getColor()) {
 			return List.of();
 		}
 		var possibleMoves = piece.getPossibleMoves(this, c);
@@ -235,9 +269,12 @@ public class Board {
 				int castlingDirection = (move.x - c.x) / abs(move.x - c.x);
 				Coordinate currKingCoordinate = c.clone();
 				boolean isValidCastling = true;
-				Board board = new Board(this.board, this.turn);
+				Board board = new Board(this);
+				if (board.isUnderCheck(turn)) {
+					isValidCastling = false;
+					break;
+				}
 				while (!currKingCoordinate.equals(newKingsPosition)) {
-					System.out.println("Curr King: " + currKingCoordinate);
 					Coordinate kingCoordinateAfterStep = currKingCoordinate.add(new Coordinate(castlingDirection, 0));
 					if (board.get(kingCoordinateAfterStep) != null) {
 						isValidCastling = false;
@@ -255,7 +292,7 @@ public class Board {
 				}
 			} else {
 				System.out.println("Checking move " + move);
-				Board board = new Board(this.board, this.turn);
+				Board board = new Board(this);
 				board.move(c, move);
 				if (!board.isUnderCheck(turn)) {
 					validMoves.add(move);
@@ -282,5 +319,22 @@ public class Board {
 
 	public void replacePiece(int x, int y, Piece chosenPiece) {
 		board[x][y] = chosenPiece;
+	}
+
+	public List<Piece> getAllPieces() {
+		List<Piece> pieces = new ArrayList<>();
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			for (int j = 0; j < BOARD_SIZE; j++) {
+				Piece piece = get(i, j);
+				if (piece != null) {
+					pieces.add(piece);
+				}
+			}
+		}
+		return pieces;
+	}
+
+	public void resign() {
+		this.state = BoardState.CHECKMATE;
 	}
 }

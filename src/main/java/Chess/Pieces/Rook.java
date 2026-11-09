@@ -24,6 +24,11 @@ public class Rook extends Piece implements RookPrototype {
 	}
 
 	@Override
+	public String toLetter() {
+		return "R";
+	}
+
+	@Override
 	public int value() {
 		return 5;
 	}

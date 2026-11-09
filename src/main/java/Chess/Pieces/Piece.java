@@ -17,6 +17,8 @@ public abstract class Piece {
 		return toChar() + "";
 	}
 
+	public abstract String toLetter();
+
 	public abstract int value();
 
 	public Piece(Color color) {

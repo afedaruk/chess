@@ -26,6 +26,11 @@ public class Pawn extends Piece {
 	}
 
 	@Override
+	public String toLetter() {
+		return "";
+	}
+
+	@Override
 	public int value() {
 		return 1;
 	}
