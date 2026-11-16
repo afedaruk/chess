@@ -13,6 +13,8 @@ import java.util.List;
 public class HistoryBuilder {
 
 	private final List<String> history;
+	private BoardState boardState;
+	private Color winner;
 
 	public HistoryBuilder() {
 		history = new ArrayList<String>();
@@ -26,6 +28,15 @@ public class HistoryBuilder {
 		return new HistoryBuilder(new ArrayList<>(history));
 	}
 
+	public void setWinner(Color winner) {
+		this.winner = winner;
+		boardState = BoardState.CHECKMATE;
+	}
+
+	public void setDraw() {
+		boardState = BoardState.DRAW;
+	}
+
 	public void add(String entry, boolean withCheck) {
 		if (withCheck) {
 			entry += "+";
@@ -33,15 +44,37 @@ public class HistoryBuilder {
 		history.add(entry);
 	}
 
-	public void addCastling() {
-		history.add("O-O-O");
+	public void addCastling(boolean extended) {
+		if (extended) {
+			history.add("O-O-O");
+		} else {
+			history.add("O-O");
+		}
+	}
+
+	public String getMatchResultString() {
+		if (boardState == BoardState.CHECKMATE) {
+			if (winner == Color.White) {
+				return "[1-0]";
+			} else {
+				return "[0-1]";
+			}
+		} else {
+			return "[1/2-1/2]";
+		}
 	}
 
 	public String getHistory() {
 		String historyString = "";
+		historyString += "[Event \"Local Game\"]\n";
+		historyString += "[Site \"Local\"]\n";
+		historyString += "[Round \"1\"]\n";
 		LocalDate today = LocalDate.now();
 		historyString += "[Date \"" + today.toString() + "\"]\n";
+		historyString += "[Result \"" + getMatchResultString() + "\"]\n";
 		historyString += getRawHistory();
+		historyString += "\n";
+		historyString += getMatchResultString();
 		return historyString;
 	}
 

@@ -24,42 +24,38 @@ public class MainController {
 	@FXML
 	public GridPane boardGrid;
 
-	@FXML
 	public HBox promotionChoiceContainer;
-
 	public VBox overlayCard;
 	public Label gameOverText;
 	public Label gameLog;
-
-	@FXML
 	public Button downloadHistoryButton;
-
-	@FXML
-	private CheckBox checkBox;
-
-	boolean shouldFlipBoard = false;
-	boolean isBoardFlipped = false;
-
-	private final Color EVEN_SQUARE_COLOR = Color.LIGHTGRAY;
-	private final Color ODD_SQUARE_COLOR = Color.DARKBLUE;
+	public CheckBox checkBox;
 
 	private final SoundController soundController = new SoundController();
 
-	public void handleButtonClick(ActionEvent event) {
-		shouldFlipBoard = checkBox.isSelected();
-		updateBoard();
-	}
+	private final Color EVEN_SQUARE_COLOR = Color.LIGHTGRAY;
+	private final Color ODD_SQUARE_COLOR = Color.DARKBLUE;
+	private final String PIECE_CLASS_NAME = "Piece";
+	private final String MOVE_MARK_CLASS_NAME = "MoveMark";
+	private final int BOARD_SIZE = 8;
 
 	StackPane[][] squares = new StackPane[8][8];
 	boolean[][] squareHasMoveMark = new boolean[8][8];
-	private final int BOARD_SIZE = 8;
 	Board board;
 	Coordinate selectedPieceCoordinate;
+
+	boolean shouldFlipBoard = false;
+	boolean isBoardFlipped = false;
 
 	@FXML
 	private void initialize() {
 		soundController.initialize();
 		startNewGame();
+	}
+
+	public void handleCheckBoxClick(ActionEvent event) {
+		shouldFlipBoard = checkBox.isSelected();
+		updateBoard();
 	}
 
 	public void startNewGame() {
@@ -139,7 +135,7 @@ public class MainController {
 			if (promotionOption.getColor() == Chess.Color.White) l.setTextFill(Color.WHITE); else l.setTextFill(
 				Color.BLACK
 			);
-			l.getStyleClass().add("Piece");
+			l.getStyleClass().add(PIECE_CLASS_NAME);
 			cell.getChildren().add(r);
 			cell.getChildren().add(l);
 			cell.setOnMouseClicked(event -> {
@@ -186,7 +182,7 @@ public class MainController {
 		Label kingSymbol = (Label) squares[x][y].getChildren()
 			.stream()
 			.filter(child -> {
-				return child.getStyleClass().contains("Piece");
+				return child.getStyleClass().contains(PIECE_CLASS_NAME);
 			})
 			.findFirst()
 			.orElse(null);
@@ -200,7 +196,7 @@ public class MainController {
 		Label kingSymbol = (Label) squares[x][y].getChildren()
 			.stream()
 			.filter(child -> {
-				return child.getStyleClass().contains("Piece");
+				return child.getStyleClass().contains(PIECE_CLASS_NAME);
 			})
 			.findFirst()
 			.orElse(null);
@@ -212,7 +208,7 @@ public class MainController {
 		hidePromotionOptions();
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
-				squares[i][j].getChildren().removeIf(child -> (child.getStyleClass().contains("MoveMark")));
+				squares[i][j].getChildren().removeIf(child -> (child.getStyleClass().contains(MOVE_MARK_CLASS_NAME)));
 				squareHasMoveMark[i][j] = false;
 			}
 		}
@@ -274,7 +270,7 @@ public class MainController {
 		Label l = new Label("○");
 		l.setTextFill(Color.GRAY);
 		l.setStyle("-fx-font-size: 40;");
-		l.getStyleClass().add("MoveMark");
+		l.getStyleClass().add(MOVE_MARK_CLASS_NAME);
 		squares[x][y].getChildren().add(l);
 	}
 
@@ -293,7 +289,7 @@ public class MainController {
 	}
 
 	private void setSquarePiece(int x, int y, Piece piece) {
-		squares[x][y].getChildren().removeIf(child -> (child.getStyleClass().contains("Piece")));
+		squares[x][y].getChildren().removeIf(child -> (child.getStyleClass().contains(PIECE_CLASS_NAME)));
 		if (piece == null) {
 			return;
 		}
@@ -301,7 +297,7 @@ public class MainController {
 		Label l = new Label(piece.toSymbol());
 		l.setStyle("-fx-font-size: 60;");
 		if (piece.getColor() == Chess.Color.White) l.setTextFill(Color.WHITE); else l.setTextFill(Color.BLACK);
-		l.getStyleClass().add("Piece");
+		l.getStyleClass().add(PIECE_CLASS_NAME);
 		squares[x][y].getChildren().add(l);
 	}
 

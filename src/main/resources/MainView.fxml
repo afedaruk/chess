@@ -23,7 +23,7 @@
             </padding>
         </HBox>
         <HBox spacing="10" alignment="CENTER">
-            <CheckBox fx:id="checkBox" text="Flip the board" onAction="#handleButtonClick"/>
+            <CheckBox fx:id="checkBox" text="Flip the board" onAction="#handleCheckBoxClick"/>
             <Button fx:id="restartButton" text="Restart" onAction="#startNewGame"/>
             <Button text="Resign" onAction="#resign"/>
         </HBox>

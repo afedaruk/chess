@@ -137,7 +137,7 @@ public class Board {
 			board[newRooksPosition.x][newRooksPosition.y] = toPiece;
 			board[from.x][from.y] = null;
 			board[to.x][to.y] = null;
-			historyBuilder.addCastling();
+			historyBuilder.addCastling(rookShift == 1);
 			return;
 		}
 		if (
@@ -148,6 +148,7 @@ public class Board {
 			board[to.x][to.y + piece.getColor().getDirection()] = board[from.x][from.y];
 			board[from.x][from.y] = null;
 			board[to.x][to.y] = null;
+			historyBuilder.add(to.add(0, piece.getColor().getDirection()).toString(), isUnderCheck(turn.getOpposite()));
 			return;
 		}
 		lastMovedPieceFrom = new Coordinate(from);
@@ -215,6 +216,7 @@ public class Board {
 		boolean isCheckmated = hasNoMoves(colorCheckmated);
 		if (isCheckmated) {
 			state = BoardState.CHECKMATE;
+			historyBuilder.setWinner(colorCheckmated.getOpposite());
 		}
 	}
 
@@ -223,15 +225,18 @@ public class Board {
 		boolean isStalemated = hasNoMoves(colorStalemated);
 		if (isStalemated) {
 			state = BoardState.DRAW;
+			historyBuilder.setDraw();
 		}
 	}
 
 	private void updateDraw() {
 		if (movesWithoutPawnMove >= MAX_MOVES_WITHOUT_PAWN_MOVE) {
 			state = BoardState.DRAW;
+			historyBuilder.setDraw();
 		}
 		if (material.get(Color.White) <= 3) {
 			state = BoardState.DRAW;
+			historyBuilder.setDraw();
 		}
 	}
 
@@ -286,7 +291,6 @@ public class Board {
 				Board board = new Board(this);
 				if (board.isUnderCheck(turn)) {
 					isValidCastling = false;
-					break;
 				}
 				// Iterate over all squares and verify valid castling
 				Coordinate currKingCoordinate = c.clone();
@@ -364,6 +368,7 @@ public class Board {
 
 	public void resign() {
 		this.state = BoardState.CHECKMATE;
+		this.historyBuilder.setWinner(getTurn().getOpposite());
 	}
 
 	public Coordinate getLastMovedPieceFrom() {
