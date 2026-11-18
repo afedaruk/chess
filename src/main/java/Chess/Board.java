@@ -251,12 +251,13 @@ public class Board {
 				if (piece.getColor() != color) {
 					continue;
 				}
-				List<Coordinate> pieceMoves = piece.getPossibleMoves(this, new Coordinate(i, j));
+				List<Coordinate> pieceMoves = getPieceMoves(i, j);
 				for (Coordinate pieceMove : pieceMoves) {
 					Board possibleBoard = new Board(this);
 					possibleBoard.move(new Coordinate(i, j), pieceMove);
 					if (!possibleBoard.isUnderCheck(color)) {
 						noMoves = false;
+						System.out.println("MOVE " + pieceMove.toString() + " " + piece.toString());
 						break;
 					}
 				}
@@ -285,6 +286,7 @@ public class Board {
 				toPiece instanceof Rook
 			) {
 				// Castling
+				System.out.println("Checking castling...");
 				Coordinate newKingsPosition = new Coordinate((int) ceil((c.x + move.x) / 2.0), c.y);
 				int castlingDirection = (move.x - c.x) / abs(move.x - c.x);
 				boolean isValidCastling = true;
@@ -292,6 +294,7 @@ public class Board {
 				if (board.isUnderCheck(turn)) {
 					isValidCastling = false;
 				}
+				System.out.println(board.isUnderCheck(turn));
 				// Iterate over all squares and verify valid castling
 				Coordinate currKingCoordinate = c.clone();
 				while (!currKingCoordinate.equals(newKingsPosition)) {
@@ -300,6 +303,7 @@ public class Board {
 						isValidCastling = false;
 						break;
 					}
+					System.out.println(board.isUnderCheck(turn));
 					board.moveNoTurn(currKingCoordinate, kingCoordinateAfterStep);
 					currKingCoordinate = kingCoordinateAfterStep;
 					if (board.isUnderCheck(turn)) {
