@@ -16,7 +16,8 @@ public class MainApp extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/MainView.fxml"));
 		Parent root = loader.load();
-		Scene scene = new Scene(root, 800, 900);
+		Scene scene = new Scene(root, 800, 860);
+		primaryStage.setResizable(false);
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Chess");
 		primaryStage.show();

@@ -1,6 +1,5 @@
 package Chess;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,27 +9,30 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HistoryBuilder {
+public class PGNBuilder {
 
 	private final List<String> history;
 	private BoardState boardState;
 	private Color winner;
 
-	public HistoryBuilder() {
+	public PGNBuilder() {
 		history = new ArrayList<String>();
 	}
 
-	public HistoryBuilder(List<String> history) {
+	public PGNBuilder(List<String> history) {
 		this.history = history;
 	}
 
-	public HistoryBuilder copy() {
-		return new HistoryBuilder(new ArrayList<>(history));
+	public PGNBuilder copy() {
+		return new PGNBuilder(new ArrayList<>(history));
 	}
 
 	public void setWinner(Color winner) {
 		this.winner = winner;
 		boardState = BoardState.CHECKMATE;
+		int lastMove = history.size() - 1;
+		int lastCheckSymbol = history.get(lastMove).length() - 1;
+		history.set(lastMove, history.get(lastMove).substring(0, lastCheckSymbol) + '#');
 	}
 
 	public void setDraw() {
@@ -55,13 +57,15 @@ public class HistoryBuilder {
 	public String getMatchResultString() {
 		if (boardState == BoardState.CHECKMATE) {
 			if (winner == Color.White) {
-				return "[1-0]";
+				return "1-0";
 			} else {
-				return "[0-1]";
+				return "0-1";
 			}
-		} else {
-			return "[1/2-1/2]";
 		}
+		if (boardState == BoardState.DRAW) {
+			return "1/2-1/2";
+		}
+		return "*";
 	}
 
 	public String getHistory() {

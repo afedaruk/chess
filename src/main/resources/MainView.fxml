@@ -10,6 +10,8 @@
 <?import javafx.scene.layout.VBox ?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Region?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.MainController"
@@ -26,6 +28,8 @@
             <CheckBox fx:id="checkBox" text="Flip the board" onAction="#handleCheckBoxClick"/>
             <Button fx:id="restartButton" text="Restart" onAction="#startNewGame"/>
             <Button text="Resign" onAction="#resign"/>
+            <Button text="Copy PGN" onAction="#copyPGNToClipboard"/>
+            <Button text="Load PGN" onAction="#showLoadPGNWindow"/>
         </HBox>
         <Label fx:id="gameLog"/>
 
@@ -41,7 +45,21 @@
                 <Button text="Restart" onAction="#initialize"/>
                 <Button fx:id="downloadHistoryButton" text="Download history (PGN)" onAction="#downloadHistory"/>
             </VBox>
+            <VBox fx:id="loadPGNCard"
+                  visible="false"
+                  maxWidth="250.0"
+                  alignment="CENTER" spacing="10"
+                  translateY="-500"
+                  style="-fx-background-color: lightyellow; -fx-border-color: black; -fx-padding: 40">
+                <Label text="Load PGN" style="-fx-font-size: 30px;"/>
+                <TextField fx:id="PGNInputField" promptText="Paste your PGN here..."/>
+                <HBox>
+                    <Button text="Cancel" onAction="#hideLoadPGNWindow"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="Load" onAction="#loadPGN"/>
+                </HBox>
+                <Label fx:id="invalidPGNLabel" text="Invalid PGN" style="-fx-text-fill: red" visible="false"/>
+            </VBox>
         </StackPane>
-
     </VBox>
 </VBox>

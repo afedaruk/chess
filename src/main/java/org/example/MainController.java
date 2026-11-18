@@ -3,7 +3,11 @@ package org.example;
 import Chess.Board;
 import Chess.BoardState;
 import Chess.Coordinate;
+import Chess.PGNLoader;
 import Chess.Pieces.*;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javafx.application.Platform;
@@ -12,6 +16,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -26,10 +31,13 @@ public class MainController {
 
 	public HBox promotionChoiceContainer;
 	public VBox overlayCard;
+	public VBox loadPGNCard;
 	public Label gameOverText;
 	public Label gameLog;
 	public Button downloadHistoryButton;
 	public CheckBox checkBox;
+	public TextField PGNInputField;
+	public Label invalidPGNLabel;
 
 	private final SoundController soundController = new SoundController();
 
@@ -37,6 +45,7 @@ public class MainController {
 	private final Color ODD_SQUARE_COLOR = Color.DARKBLUE;
 	private final String PIECE_CLASS_NAME = "Piece";
 	private final String MOVE_MARK_CLASS_NAME = "MoveMark";
+	private final int MAX_HISTORY_LENGTH = 140;
 	private final int BOARD_SIZE = 8;
 
 	StackPane[][] squares = new StackPane[8][8];
@@ -84,7 +93,11 @@ public class MainController {
 					);
 			} else {
 				moveSelectedPieceTo(x, y);
-				soundController.playMoveSound();
+				if (board.getState() == BoardState.CHECKMATE) {
+					soundController.playCheckmateSound();
+				} else {
+					soundController.playMoveSound();
+				}
 			}
 			return;
 		}
@@ -147,7 +160,7 @@ public class MainController {
 	}
 
 	private void moveSelectedPieceTo(int x, int y) {
-		board.moveAndUpdateState(selectedPieceCoordinate, new Coordinate(x, y));
+		board.move(selectedPieceCoordinate, new Coordinate(x, y));
 		updateBoard();
 		runPostMoveChecks();
 		return;
@@ -308,17 +321,24 @@ public class MainController {
 	}
 
 	private void updateLog() {
-		gameLog.setText(board.historyBuilder.getRawHistory());
+		String history = board.PGNBuilder.getRawHistory();
+		int historyLength = history.length();
+		if (historyLength > MAX_HISTORY_LENGTH) {
+			int from = historyLength - MAX_HISTORY_LENGTH;
+			int to = historyLength - 1;
+			history = "... " + history.substring(from, to);
+		}
+		gameLog.setText(history);
 	}
 
 	@FXML
 	private void printHistory() {
-		System.out.println(board.historyBuilder.getHistory());
+		System.out.println(board.PGNBuilder.getHistory());
 	}
 
 	@FXML
 	private void downloadHistory() {
-		board.historyBuilder.downloadHistory();
+		board.PGNBuilder.downloadHistory();
 		downloadHistoryButton.setText("PGN saved to Downloads✔");
 	}
 
@@ -343,5 +363,37 @@ public class MainController {
 	@FXML
 	private void hideOverlay() {
 		overlayCard.setVisible(false);
+	}
+
+	@FXML
+	private void showLoadPGNWindow() {
+		loadPGNCard.setVisible(true);
+	}
+
+	@FXML
+	private void loadPGN() {
+		try {
+			board = PGNLoader.LoadPGN(PGNInputField.getText());
+			updateBoard();
+			hideLoadPGNWindow();
+		} catch (IllegalArgumentException ex) {
+			System.err.println("invalid PGN input");
+			invalidPGNLabel.setVisible(true);
+		}
+	}
+
+	@FXML
+	private void hideLoadPGNWindow() {
+		PGNInputField.setText("");
+		invalidPGNLabel.setVisible(false);
+		loadPGNCard.setVisible(false);
+	}
+
+	@FXML
+	private void copyPGNToClipboard() {
+		String PGN = board.PGNBuilder.getHistory();
+		StringSelection stringSelection = new StringSelection(PGN);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(stringSelection, null);
 	}
 }
