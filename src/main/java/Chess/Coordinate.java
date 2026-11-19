@@ -12,12 +12,20 @@ public class Coordinate implements Cloneable {
 		this.y = y;
 	}
 
-	public Coordinate(String coordinate) {
+	public Coordinate(String coordinate) throws IllegalArgumentException {
 		if (coordinate.length() != 2) {
 			throw new IllegalArgumentException();
 		}
-		this.x = coordinate.charAt(0) - 'a';
-		this.y = coordinate.charAt(1) - '0' - 1;
+		this.x = parseX(coordinate.charAt(0));
+		this.y = parseY(coordinate.charAt(1));
+	}
+
+	public static int parseX(char x) throws IllegalArgumentException {
+		return x - 'a';
+	}
+
+	public static int parseY(char y) throws IllegalArgumentException {
+		return y - '0' - 1;
 	}
 
 	public Coordinate(Coordinate coordinate) {
@@ -50,16 +58,9 @@ public class Coordinate implements Cloneable {
 
 	@Override
 	public boolean equals(Object obj) {
-		// 1. Same memory reference check
 		if (this == obj) return true;
-
-		// 2. Null check and EXACT class equality check
 		if (obj == null || getClass() != obj.getClass()) return false;
-
-		// 3. Safe cast since runtime types match exactly
 		Coordinate other = (Coordinate) obj;
-
-		// 4. Field-by-field comparison
 		return this.x == other.x && this.y == other.y;
 	}
 

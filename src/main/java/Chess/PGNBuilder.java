@@ -1,5 +1,6 @@
 package Chess;
 
+import Chess.Pieces.Piece;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,7 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PGNBuilder {
+public class PGNBuilder extends PGNBase {
 
 	private final List<String> history;
 	private BoardState boardState;
@@ -32,7 +33,7 @@ public class PGNBuilder {
 		boardState = BoardState.CHECKMATE;
 		int lastMove = history.size() - 1;
 		int lastCheckSymbol = history.get(lastMove).length() - 1;
-		history.set(lastMove, history.get(lastMove).substring(0, lastCheckSymbol) + '#');
+		history.set(lastMove, history.get(lastMove).substring(0, lastCheckSymbol) + CHECKMATE_SYMBOL);
 	}
 
 	public void setDraw() {
@@ -41,41 +42,40 @@ public class PGNBuilder {
 
 	public void add(String entry, boolean withCheck) {
 		if (withCheck) {
-			entry += "+";
+			entry += CHECK_SYMBOL;
 		}
 		history.add(entry);
 	}
 
-	public void addCastling(boolean extended) {
-		if (extended) {
-			history.add("O-O-O");
+	public void addCastling(boolean isLong) {
+		if (isLong) {
+			history.add(LONG_CASTLING);
 		} else {
-			history.add("O-O");
+			history.add(SHORT_CASTLING);
 		}
 	}
 
 	public String getMatchResultString() {
 		if (boardState == BoardState.CHECKMATE) {
 			if (winner == Color.White) {
-				return "1-0";
+				return RESULT_WHITE_WIN;
 			} else {
-				return "0-1";
+				return RESULT_BLACK_WIN;
 			}
 		}
 		if (boardState == BoardState.DRAW) {
-			return "1/2-1/2";
+			return RESULT_DRAW;
 		}
-		return "*";
+		return RESULT_UNFINISHED;
 	}
 
 	public String getHistory() {
 		String historyString = "";
-		historyString += "[Event \"Local Game\"]\n";
-		historyString += "[Site \"Local\"]\n";
-		historyString += "[Round \"1\"]\n";
-		LocalDate today = LocalDate.now();
-		historyString += "[Date \"" + today.toString() + "\"]\n";
-		historyString += "[Result \"" + getMatchResultString() + "\"]\n";
+		historyString += getTag("Event", "Local Game");
+		historyString += getTag("Site", "Local PC");
+		historyString += getTag("Round", "1");
+		historyString += getTag("Date", LocalDate.now().toString());
+		historyString += getTag("Result", getMatchResultString());
 		historyString += getRawHistory();
 		historyString += "\n";
 		historyString += getMatchResultString();
@@ -85,7 +85,7 @@ public class PGNBuilder {
 	public String getRawHistory() {
 		String historyString = "";
 		for (int entryNumber = 0; entryNumber < history.size(); entryNumber++) {
-			if (entryNumber % 2 == 0) historyString += (entryNumber / 2 + 1) + ". ";
+			if (entryNumber % 2 == 0) historyString += (entryNumber / 2 + 1) + MOVE_NUMBER_SYMBOL + " ";
 			historyString += history.get(entryNumber) + " ";
 		}
 		return historyString;
@@ -107,5 +107,14 @@ public class PGNBuilder {
 			System.out.println("An error occurred.");
 			e.printStackTrace();
 		}
+	}
+
+	public void promotePiece(Piece chosenPiece) {
+		int lastMove = history.size() - 1;
+		history.set(lastMove, history.get(lastMove) + PROMOTION_SYMBOL + chosenPiece.toLetter());
+	}
+
+	public String getTag(String tag, String value) {
+		return TAG_OPENING_SYMBOL + tag + " " + TAG_VALUE_SYMBOL + value + TAG_VALUE_SYMBOL + TAG_CLOSING_SYMBOL + "\n";
 	}
 }

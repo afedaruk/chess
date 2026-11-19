@@ -15,6 +15,8 @@ public class GameConstants {
 		Queen.class,
 		Rook.class
 	);
+	public static final Coordinate SHORT_CASTLING_VECTOR = new Coordinate(3, 0);
+	public static final Coordinate LONG_CASTLING_VECTOR = new Coordinate(-4, 0);
 
 	public static String getPiecesLetters() {
 		StringBuilder sb = new StringBuilder();

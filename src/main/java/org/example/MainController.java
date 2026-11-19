@@ -38,6 +38,7 @@ public class MainController {
 	public CheckBox checkBox;
 	public TextField PGNInputField;
 	public Label invalidPGNLabel;
+	public Button copyPGNButton;
 
 	private final SoundController soundController = new SoundController();
 
@@ -113,14 +114,12 @@ public class MainController {
 			}
 		}
 		var moves = board.getPieceMoves(x, y);
-		System.out.println(moves);
 		for (var move : moves) {
 			setSquareMoveMark(move.x, move.y);
 		}
 	}
 
 	private void hidePromotionOptions() {
-		System.out.println("Hiding promotion options");
 		promotionChoiceContainer.getChildren().clear();
 	}
 
@@ -131,7 +130,6 @@ public class MainController {
 	}
 
 	private void displayPromotionChoices(CompletableFuture<Piece> future) {
-		System.out.println("PROMOTION CHOICE");
 		Chess.Color promotionColor = board.getTurn();
 		List<Piece> promotionOptions = List.of(
 			new Bishop(promotionColor),
@@ -153,7 +151,6 @@ public class MainController {
 			cell.getChildren().add(l);
 			cell.setOnMouseClicked(event -> {
 				future.complete(promotionOption);
-				System.out.println(promotionOption.toSymbol());
 			});
 			promotionChoiceContainer.getChildren().add(cell);
 		}
@@ -357,6 +354,7 @@ public class MainController {
 			gameOverText.setText("Draw");
 			overlayCard.setVisible(true);
 		}
+		copyPGNButton.setText("Copy PGN");
 		downloadHistoryButton.setText("Download history (PGN)");
 	}
 
@@ -395,5 +393,6 @@ public class MainController {
 		StringSelection stringSelection = new StringSelection(PGN);
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clipboard.setContents(stringSelection, null);
+		copyPGNButton.setText("Copied✔");
 	}
 }

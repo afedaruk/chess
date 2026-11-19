@@ -39,7 +39,6 @@ public class Pawn extends Piece {
 
 	@Override
 	public List<Coordinate> getPossibleMoves(Board board, Coordinate coordinate) {
-		System.out.println(coordinate.toString());
 		List<Coordinate> possibleMoves = new ArrayList<>();
 		Coordinate forward = coordinate.add(0, color.getDirection());
 		Coordinate two_forward = coordinate.add(0, 2 * color.getDirection());

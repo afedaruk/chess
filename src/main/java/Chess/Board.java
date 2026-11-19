@@ -116,6 +116,42 @@ public class Board {
 		if (this.get(from).getColor() != turn) {
 			throw new IllegalArgumentException();
 		}
+		// Disambiguation
+		String disambiguationX = "";
+		String disambiguationY = "";
+		Piece piece = this.get(from);
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			for (int j = 0; j < BOARD_SIZE; j++) {
+				if (i == from.x && j == from.y) {
+					continue;
+				}
+				if (board[i][j] == null) {
+					continue;
+				}
+				if (
+					board[i][j] != null &&
+					board[i][j].getClass() == piece.getClass() &&
+					board[i][j].getColor() == piece.getColor()
+				) {
+					List<Coordinate> otherPieceMoves = getPieceMoves(i, j);
+					if (otherPieceMoves.contains(to)) {
+						if (i != from.x) {
+							disambiguationX = "" + (char) ('a' + from.x);
+						} else {
+							disambiguationY = "" + (char) ('1' + from.y);
+						}
+					}
+				}
+			}
+		}
+		lastMovedPieceFrom = new Coordinate(from);
+		lastMovedPieceTo = new Coordinate(to);
+		moveNoChecks(from, to);
+		String entry = piece.toLetter() + disambiguationX + disambiguationY + to.toString();
+		PGNBuilder.add(entry, isUnderCheck(turn.getOpposite()));
+	}
+
+	public void moveNoChecks(Coordinate from, Coordinate to) {
 		// Castling
 		Piece piece = this.get(from);
 		Piece toPiece = this.get(to);
@@ -150,12 +186,9 @@ public class Board {
 			PGNBuilder.add(to.add(0, piece.getColor().getDirection()).toString(), isUnderCheck(turn.getOpposite()));
 			return;
 		}
-		lastMovedPieceFrom = new Coordinate(from);
-		lastMovedPieceTo = new Coordinate(to);
 		board[from.x][from.y].move();
 		board[to.x][to.y] = board[from.x][from.y];
 		board[from.x][from.y] = null;
-		PGNBuilder.add(piece.toLetter() + to.toString(), isUnderCheck(turn.getOpposite()));
 	}
 
 	public void moveNoBoardStateUpdate(Coordinate from, Coordinate to) {
@@ -253,10 +286,9 @@ public class Board {
 				List<Coordinate> pieceMoves = getPieceMoves(i, j);
 				for (Coordinate pieceMove : pieceMoves) {
 					Board possibleBoard = new Board(this);
-					possibleBoard.moveNoBoardStateUpdate(new Coordinate(i, j), pieceMove);
+					possibleBoard.moveNoChecks(new Coordinate(i, j), pieceMove);
 					if (!possibleBoard.isUnderCheck(color)) {
 						noMoves = false;
-						System.out.println("MOVE " + pieceMove.toString() + " " + piece.toString());
 						break;
 					}
 				}
@@ -285,7 +317,6 @@ public class Board {
 				toPiece instanceof Rook
 			) {
 				// Castling
-				System.out.println("Checking castling...");
 				Coordinate newKingsPosition = new Coordinate((int) ceil((c.x + move.x) / 2.0), c.y);
 				int castlingDirection = (move.x - c.x) / abs(move.x - c.x);
 				boolean isValidCastling = true;
@@ -293,7 +324,6 @@ public class Board {
 				if (board.isUnderCheck(turn)) {
 					isValidCastling = false;
 				}
-				System.out.println(board.isUnderCheck(turn));
 				// Iterate over all squares and verify valid castling
 				Coordinate currKingCoordinate = c.clone();
 				while (!currKingCoordinate.equals(newKingsPosition)) {
@@ -302,8 +332,7 @@ public class Board {
 						isValidCastling = false;
 						break;
 					}
-					System.out.println(board.isUnderCheck(turn));
-					board.moveNoTurn(currKingCoordinate, kingCoordinateAfterStep);
+					board.moveNoChecks(currKingCoordinate, kingCoordinateAfterStep);
 					currKingCoordinate = kingCoordinateAfterStep;
 					if (board.isUnderCheck(turn)) {
 						isValidCastling = false;
@@ -319,16 +348,15 @@ public class Board {
 				// En passant
 				Board board = new Board(this);
 				Coordinate newPawnCoordinate = move.add(new Coordinate(0, piece.getColor().getDirection()));
-				board.moveNoBoardStateUpdate(c, newPawnCoordinate);
+				board.moveNoChecks(c, newPawnCoordinate);
 				if (!board.isUnderCheck(turn)) {
 					validMoves.add(move);
 				}
 				continue;
 			}
 			{
-				System.out.println("Checking move " + move);
 				Board board = new Board(this);
-				board.moveNoBoardStateUpdate(c, move);
+				board.moveNoChecks(c, move);
 				if (!board.isUnderCheck(turn)) {
 					validMoves.add(move);
 				}
@@ -353,7 +381,9 @@ public class Board {
 	}
 
 	public void replacePiece(int x, int y, Piece chosenPiece) {
+		// Promotion
 		board[x][y] = chosenPiece;
+		PGNBuilder.promotePiece(chosenPiece);
 	}
 
 	public List<Piece> getAllPieces() {
@@ -369,9 +399,17 @@ public class Board {
 		return pieces;
 	}
 
-	public void resign() {
+	public void resign(Color colorResigning) {
 		this.state = BoardState.CHECKMATE;
-		this.PGNBuilder.setWinner(getTurn().getOpposite());
+		this.PGNBuilder.setWinner(colorResigning.getOpposite());
+	}
+
+	public void resign() {
+		resign(getTurn());
+	}
+
+	public void draw() {
+		state = BoardState.DRAW;
 	}
 
 	public Coordinate getLastMovedPieceFrom() {

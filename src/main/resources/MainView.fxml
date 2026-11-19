@@ -28,7 +28,7 @@
             <CheckBox fx:id="checkBox" text="Flip the board" onAction="#handleCheckBoxClick"/>
             <Button fx:id="restartButton" text="Restart" onAction="#startNewGame"/>
             <Button text="Resign" onAction="#resign"/>
-            <Button text="Copy PGN" onAction="#copyPGNToClipboard"/>
+            <Button fx:id="copyPGNButton" text="Copy PGN" onAction="#copyPGNToClipboard"/>
             <Button text="Load PGN" onAction="#showLoadPGNWindow"/>
         </HBox>
         <Label fx:id="gameLog"/>
